@@ -361,6 +361,7 @@ static NSInteger CCMaximumFramesPerSecond(void)
         return;
 
 	gettimeofday( &_lastUpdate, NULL);
+	_lastDisplayTime = 0;
 
 	NSInteger preferredFPS = CCPreferredFramesPerSecondForInterval(_animationInterval);
 	CCLOG(@"cocos2d: animation started with preferred fps: %ld", (long)preferredFPS);
@@ -368,8 +369,8 @@ static NSInteger CCMaximumFramesPerSecond(void)
 	_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(mainLoop:)];
 	if(@available(iOS 15.0, *)){
 		NSInteger maximumFPS = CCMaximumFramesPerSecond();
-		NSInteger minimumFPS = preferredFPS >= maximumFPS ? MIN(60, maximumFPS) : preferredFPS;
-		_displayLink.preferredFrameRateRange = CAFrameRateRangeMake((float)minimumFPS, (float)maximumFPS, (float)preferredFPS);
+		NSInteger maximumRangeFPS = MAX(preferredFPS, maximumFPS);
+		_displayLink.preferredFrameRateRange = CAFrameRateRangeMake((float)preferredFPS, (float)maximumRangeFPS, (float)preferredFPS);
 	} else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
@@ -384,7 +385,7 @@ static NSInteger CCMaximumFramesPerSecond(void)
 
 #else
 	// setup DisplayLink in main thread
-	[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+	[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 #endif
 
     _animating = YES;
@@ -448,7 +449,7 @@ static NSInteger CCMaximumFramesPerSecond(void)
 {
 	@autoreleasepool {
 
-		[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
+		[_displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSRunLoopCommonModes];
 
 		// start the run loop
 		[[NSRunLoop currentRunLoop] run];
