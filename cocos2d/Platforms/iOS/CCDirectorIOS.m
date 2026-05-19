@@ -56,6 +56,8 @@
 #import "../../Support/CCProfiling.h"
 #endif
 
+static NSString * const GorillaClimbCocosFrameDiagnosticNotification = @"GorillaClimbCocosFrameDiagnosticNotification";
+
 #pragma mark -
 #pragma mark Director
 
@@ -340,7 +342,49 @@ static NSInteger CCMaximumFramesPerSecond(void)
 
 -(void) mainLoop:(id)sender
 {
+	CADisplayLink *displayLink = [sender isKindOfClass:[CADisplayLink class]] ? (CADisplayLink *)sender : _displayLink;
+	static CFTimeInterval lastDisplayTimestamp = 0.0;
+	static CFTimeInterval lastWallTime = 0.0;
+	static CFTimeInterval lastDiagnosticLogTime = 0.0;
+
+	CFTimeInterval wallStart = CACurrentMediaTime();
+	CFTimeInterval displayDelta = 0.0;
+	CFTimeInterval targetLead = 0.0;
+	CFTimeInterval displayDuration = 0.0;
+	if(displayLink){
+		if(lastDisplayTimestamp > 0.0){
+			displayDelta = displayLink.timestamp - lastDisplayTimestamp;
+		}
+		lastDisplayTimestamp = displayLink.timestamp;
+		targetLead = displayLink.targetTimestamp - displayLink.timestamp;
+		displayDuration = displayLink.duration;
+	}
+
+	CFTimeInterval wallDelta = lastWallTime > 0.0 ? wallStart - lastWallTime : 0.0;
+	lastWallTime = wallStart;
+
 	[self drawScene];
+
+	CFTimeInterval drawDuration = CACurrentMediaTime() - wallStart;
+	CFTimeInterval targetDelta = _animationInterval > 0.0 ? _animationInterval : 1.0 / 60.0;
+	BOOL cadenceSpike = (displayDelta > targetDelta * 1.5) || (wallDelta > targetDelta * 1.5);
+	BOOL drawSpike = drawDuration > targetDelta * 0.90;
+	if((cadenceSpike || drawSpike) && wallStart - lastDiagnosticLogTime > 0.5){
+		lastDiagnosticLogTime = wallStart;
+		NSString *mode = [[NSRunLoop currentRunLoop] currentMode] ?: @"unknown";
+		[[NSNotificationCenter defaultCenter] postNotificationName:GorillaClimbCocosFrameDiagnosticNotification
+															object:nil
+														  userInfo:@{
+			@"kind": @"display_link",
+			@"wallMs": @(wallDelta * 1000.0),
+			@"displayMs": @(displayDelta * 1000.0),
+			@"targetMs": @(targetDelta * 1000.0),
+			@"targetLeadMs": @(targetLead * 1000.0),
+			@"drawMs": @(drawDuration * 1000.0),
+			@"durationMs": @(displayDuration * 1000.0),
+			@"mode": mode
+		}];
+	}
 }
 
 - (void)setAnimationInterval:(NSTimeInterval)interval

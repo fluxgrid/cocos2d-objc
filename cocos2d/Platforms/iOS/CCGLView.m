@@ -83,6 +83,8 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 extern EAGLContext *CCRenderDispatchSetupGL(EAGLRenderingAPI api, EAGLSharegroup *sharegroup);
 
+static NSString * const GorillaClimbCocosFrameDiagnosticNotification = @"GorillaClimbCocosFrameDiagnosticNotification";
+
 
 //CLASS IMPLEMENTATIONS:
 
@@ -133,7 +135,7 @@ extern EAGLContext *CCRenderDispatchSetupGL(EAGLRenderingAPI api, EAGLSharegroup
 		if(glClientWaitSyncAPPLE(_fence, GL_SYNC_FLUSH_COMMANDS_BIT_APPLE, 0) == GL_ALREADY_SIGNALED_APPLE){
 			glDeleteSyncAPPLE(_fence);
 			_fence = NULL;
-			
+
 			CC_CHECK_GL_ERROR_DEBUG();
 			return YES;
 		} else {
@@ -407,6 +409,7 @@ extern EAGLContext *CCRenderDispatchSetupGL(EAGLRenderingAPI api, EAGLSharegroup
 
 -(void)presentFrame
 {
+	CFTimeInterval frameStart = CACurrentMediaTime();
 	{
 		CCGLViewFence *fence = _fences.lastObject;
 		if(fence.isReady){
@@ -437,7 +440,10 @@ extern EAGLContext *CCRenderDispatchSetupGL(EAGLRenderingAPI api, EAGLSharegroup
 	}
     
 	glBindRenderbuffer(GL_RENDERBUFFER, _colorRenderbuffer);
-	if(![_context presentRenderbuffer:GL_RENDERBUFFER]){
+	CFTimeInterval presentStart = CACurrentMediaTime();
+	BOOL presented = [_context presentRenderbuffer:GL_RENDERBUFFER];
+	CFTimeInterval presentDuration = CACurrentMediaTime() - presentStart;
+	if(!presented){
 		CCLOG(@"cocos2d: Failed to swap renderbuffer in %s\n", __FUNCTION__);
 	}
     
@@ -454,8 +460,23 @@ extern EAGLContext *CCRenderDispatchSetupGL(EAGLRenderingAPI api, EAGLSharegroup
 			break;
 		}
 	}
-	
 	CC_CHECK_GL_ERROR_DEBUG();
+	CFTimeInterval totalDuration = CACurrentMediaTime() - frameStart;
+	CFTimeInterval targetDelta = [CCDirector sharedDirector].animationInterval > 0.0 ? [CCDirector sharedDirector].animationInterval : 1.0 / 60.0;
+	static CFTimeInterval lastPresentDiagnosticLogTime = 0.0;
+	CFTimeInterval now = CACurrentMediaTime();
+	if((presentDuration > targetDelta * 0.50 || totalDuration > targetDelta * 0.90) && now - lastPresentDiagnosticLogTime > 0.5){
+		lastPresentDiagnosticLogTime = now;
+		[[NSNotificationCenter defaultCenter] postNotificationName:GorillaClimbCocosFrameDiagnosticNotification
+															object:nil
+														  userInfo:@{
+			@"kind": @"present",
+			@"targetMs": @(targetDelta * 1000.0),
+			@"presentMs": @(presentDuration * 1000.0),
+			@"totalMs": @(totalDuration * 1000.0),
+			@"presented": @(presented)
+		}];
+	}
 }
 
 -(GLuint)fbo
