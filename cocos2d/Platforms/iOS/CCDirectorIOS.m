@@ -324,6 +324,18 @@ static NSInteger CCPreferredFramesPerSecondForInterval(NSTimeInterval interval)
 	return preferredFPS;
 }
 
+static NSInteger CCMaximumFramesPerSecond(void)
+{
+	if(@available(iOS 10.3, *)){
+		NSInteger maximumFPS = UIScreen.mainScreen.maximumFramesPerSecond;
+		if(maximumFPS > 0){
+			return maximumFPS;
+		}
+	}
+
+	return 60;
+}
+
 @implementation CCDirectorDisplayLink
 
 -(void) mainLoop:(id)sender
@@ -355,7 +367,9 @@ static NSInteger CCPreferredFramesPerSecondForInterval(NSTimeInterval interval)
 	_animationInterval = 1.0 / preferredFPS;
 	_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(mainLoop:)];
 	if(@available(iOS 15.0, *)){
-		_displayLink.preferredFrameRateRange = CAFrameRateRangeMake((float)preferredFPS, (float)preferredFPS, (float)preferredFPS);
+		NSInteger maximumFPS = CCMaximumFramesPerSecond();
+		NSInteger minimumFPS = preferredFPS >= maximumFPS ? MIN(60, maximumFPS) : preferredFPS;
+		_displayLink.preferredFrameRateRange = CAFrameRateRangeMake((float)minimumFPS, (float)maximumFPS, (float)preferredFPS);
 	} else {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
