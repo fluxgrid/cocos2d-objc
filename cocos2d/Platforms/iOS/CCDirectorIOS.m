@@ -30,7 +30,10 @@
 #import "../../ccMacros.h"
 #if __CC_PLATFORM_IOS
 
+#import <math.h>
 #import <unistd.h>
+#import <QuartzCore/CADisplayLink.h>
+#import <UIKit/UIScreen.h>
 
 // cocos2d imports
 #import "CCDirectorIOS.h"
@@ -304,8 +307,24 @@
 #pragma mark -
 #pragma mark DirectorDisplayLink
 
-@implementation CCDirectorDisplayLink
+static NSInteger CCPreferredFramesPerSecondForInterval(NSTimeInterval interval)
+{
+	if(interval <= 0.0){
+		return 60;
+	}
 
+	NSInteger preferredFPS = MAX(1, (NSInteger)lround(1.0 / interval));
+	if(@available(iOS 10.3, *)){
+		NSInteger maximumFPS = UIScreen.mainScreen.maximumFramesPerSecond;
+		if(maximumFPS > 0){
+			preferredFPS = MIN(preferredFPS, maximumFPS);
+		}
+	}
+
+	return preferredFPS;
+}
+
+@implementation CCDirectorDisplayLink
 
 -(void) mainLoop:(id)sender
 {
@@ -314,7 +333,8 @@
 
 - (void)setAnimationInterval:(NSTimeInterval)interval
 {
-	_animationInterval = interval;
+	NSInteger preferredFPS = CCPreferredFramesPerSecondForInterval(interval);
+	_animationInterval = 1.0 / preferredFPS;
 	if(_displayLink){
 		[self stopAnimation];
 		[self startAnimation];
@@ -330,14 +350,18 @@
 
 	gettimeofday( &_lastUpdate, NULL);
 
-	// approximate frame rate
-	// assumes device refreshes at 60 fps
-	int frameInterval = (int) floor(_animationInterval * 60.0f);
-
-	CCLOG(@"cocos2d: animation started with frame interval: %.2f", 60.0f/frameInterval);
-
+	NSInteger preferredFPS = CCPreferredFramesPerSecondForInterval(_animationInterval);
+	CCLOG(@"cocos2d: animation started with preferred fps: %ld", (long)preferredFPS);
+	_animationInterval = 1.0 / preferredFPS;
 	_displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(mainLoop:)];
-	[_displayLink setFrameInterval:frameInterval];
+	if(@available(iOS 15.0, *)){
+		_displayLink.preferredFrameRateRange = CAFrameRateRangeMake((float)preferredFPS, (float)preferredFPS, (float)preferredFPS);
+	} else {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+		_displayLink.preferredFramesPerSecond = preferredFPS;
+#pragma clang diagnostic pop
+	}
 
 #if CC_DIRECTOR_IOS_USE_BACKGROUND_THREAD
 	//

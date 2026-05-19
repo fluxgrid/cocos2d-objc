@@ -54,7 +54,7 @@
  * Features and Limitations:
  * - Only available on 3.1+
  * - Scheduled timers & drawing are synchronizes with the refresh rate of the display
- * - Only supports animation intervals of 1/60 1/30 & 1/15
+ * - Requests the closest supported display refresh rate for the configured animation interval
  *
  * It is the recommended Director if the SDK is 3.1 or newer
  *
