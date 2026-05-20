@@ -217,13 +217,11 @@ static NSString * const GorillaClimbCocosFrameDiagnosticNotification = @"Gorilla
 		_preserveBackbuffer = retained;
 		_msaaSamples = nSamples;
 		
-		// Default to the screen's native scale.
+		// Match the older Cocos retina behavior used by Tiny Wings: cap the
+		// default GL backing scale at 2x instead of using 3x/native-scale
+		// renderbuffers on modern phones.
 		UIScreen *screen = [UIScreen mainScreen];
-		if([screen respondsToSelector:@selector(nativeScale)]){
-			self.contentScaleFactor = screen.nativeScale;
-		} else {
-			self.contentScaleFactor = screen.scale;
-		}
+		self.contentScaleFactor = MIN((CGFloat)2.0, screen.scale);
 
 		if( ! [self setupSurfaceWithSharegroup:sharegroup] ) {
 			return nil;
