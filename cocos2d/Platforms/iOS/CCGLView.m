@@ -83,7 +83,7 @@ Copyright (C) 2008 Apple Inc. All Rights Reserved.
 
 extern EAGLContext *CCRenderDispatchSetupGL(EAGLRenderingAPI api, EAGLSharegroup *sharegroup);
 
-static NSString * const GorillaClimbCocosFrameDiagnosticNotification = @"GorillaClimbCocosFrameDiagnosticNotification";
+static NSString * const SquiggleClimbCocosFrameDiagnosticNotification = @"SquiggleClimbCocosFrameDiagnosticNotification";
 
 
 //CLASS IMPLEMENTATIONS:
@@ -465,7 +465,7 @@ static NSString * const GorillaClimbCocosFrameDiagnosticNotification = @"Gorilla
 	CFTimeInterval now = CACurrentMediaTime();
 	if((presentDuration > targetDelta * 0.50 || totalDuration > targetDelta * 0.90) && now - lastPresentDiagnosticLogTime > 0.5){
 		lastPresentDiagnosticLogTime = now;
-		[[NSNotificationCenter defaultCenter] postNotificationName:GorillaClimbCocosFrameDiagnosticNotification
+		[[NSNotificationCenter defaultCenter] postNotificationName:SquiggleClimbCocosFrameDiagnosticNotification
 															object:nil
 														  userInfo:@{
 			@"kind": @"present",

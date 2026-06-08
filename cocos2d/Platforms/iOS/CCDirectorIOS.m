@@ -56,20 +56,20 @@
 #import "../../Support/CCProfiling.h"
 #endif
 
-static NSString * const GorillaClimbCocosFrameDiagnosticNotification = @"GorillaClimbCocosFrameDiagnosticNotification";
+static NSString * const SquiggleClimbCocosFrameDiagnosticNotification = @"SquiggleClimbCocosFrameDiagnosticNotification";
 
-static NSInteger GorillaClimbCocosFrameMeterFrames = 0;
-static CFTimeInterval GorillaClimbCocosFrameMeterElapsed = 0.0;
-static CFTimeInterval GorillaClimbCocosFrameMeterLastDelta = 0.0;
-static CFTimeInterval GorillaClimbCocosFrameMeterMinDelta = 0.0;
-static CFTimeInterval GorillaClimbCocosFrameMeterMaxDelta = 0.0;
-static CFTimeInterval GorillaClimbCocosFrameMeterMaxDrawDuration = 0.0;
-static NSInteger GorillaClimbCocosFrameMeterCadenceMisses = 0;
-static NSInteger GorillaClimbCocosFrameMeterTotalCadenceMisses = 0;
-static NSInteger GorillaClimbCocosFrameMeterDeadlineMisses = 0;
-static NSInteger GorillaClimbCocosFrameMeterTotalDeadlineMisses = 0;
+static NSInteger SquiggleClimbCocosFrameMeterFrames = 0;
+static CFTimeInterval SquiggleClimbCocosFrameMeterElapsed = 0.0;
+static CFTimeInterval SquiggleClimbCocosFrameMeterLastDelta = 0.0;
+static CFTimeInterval SquiggleClimbCocosFrameMeterMinDelta = 0.0;
+static CFTimeInterval SquiggleClimbCocosFrameMeterMaxDelta = 0.0;
+static CFTimeInterval SquiggleClimbCocosFrameMeterMaxDrawDuration = 0.0;
+static NSInteger SquiggleClimbCocosFrameMeterCadenceMisses = 0;
+static NSInteger SquiggleClimbCocosFrameMeterTotalCadenceMisses = 0;
+static NSInteger SquiggleClimbCocosFrameMeterDeadlineMisses = 0;
+static NSInteger SquiggleClimbCocosFrameMeterTotalDeadlineMisses = 0;
 
-static NSInteger GorillaClimbCocosMissedTicksForDelta(CFTimeInterval delta, CFTimeInterval targetDelta)
+static NSInteger SquiggleClimbCocosMissedTicksForDelta(CFTimeInterval delta, CFTimeInterval targetDelta)
 {
 	if(targetDelta <= 0.0 || delta <= targetDelta * 1.5){
 		return 0;
@@ -78,7 +78,7 @@ static NSInteger GorillaClimbCocosMissedTicksForDelta(CFTimeInterval delta, CFTi
 	return MAX(1, (NSInteger)floor(delta / targetDelta + 0.5) - 1);
 }
 
-static NSInteger GorillaClimbCocosDeadlineMissesForDraw(CFTimeInterval drawDuration, CFTimeInterval targetDelta, CFTimeInterval targetLead)
+static NSInteger SquiggleClimbCocosDeadlineMissesForDraw(CFTimeInterval drawDuration, CFTimeInterval targetDelta, CFTimeInterval targetLead)
 {
 	if(targetDelta <= 0.0){
 		return 0;
@@ -92,35 +92,35 @@ static NSInteger GorillaClimbCocosDeadlineMissesForDraw(CFTimeInterval drawDurat
 	return MAX(1, (NSInteger)ceil((drawDuration - deadline) / targetDelta));
 }
 
-static void GorillaClimbCocosFrameMeterRecord(CFTimeInterval displayDelta, CFTimeInterval wallDelta, CFTimeInterval drawDuration, CFTimeInterval targetDelta, CFTimeInterval targetLead)
+static void SquiggleClimbCocosFrameMeterRecord(CFTimeInterval displayDelta, CFTimeInterval wallDelta, CFTimeInterval drawDuration, CFTimeInterval targetDelta, CFTimeInterval targetLead)
 {
 	CFTimeInterval frameDelta = displayDelta > 0.0 ? displayDelta : wallDelta;
 	if(frameDelta <= 0.0){
 		return;
 	}
 
-	if(GorillaClimbCocosFrameMeterFrames == 0){
-		GorillaClimbCocosFrameMeterMinDelta = frameDelta;
-		GorillaClimbCocosFrameMeterMaxDelta = frameDelta;
+	if(SquiggleClimbCocosFrameMeterFrames == 0){
+		SquiggleClimbCocosFrameMeterMinDelta = frameDelta;
+		SquiggleClimbCocosFrameMeterMaxDelta = frameDelta;
 	} else {
-		GorillaClimbCocosFrameMeterMinDelta = MIN(GorillaClimbCocosFrameMeterMinDelta, frameDelta);
-		GorillaClimbCocosFrameMeterMaxDelta = MAX(GorillaClimbCocosFrameMeterMaxDelta, frameDelta);
+		SquiggleClimbCocosFrameMeterMinDelta = MIN(SquiggleClimbCocosFrameMeterMinDelta, frameDelta);
+		SquiggleClimbCocosFrameMeterMaxDelta = MAX(SquiggleClimbCocosFrameMeterMaxDelta, frameDelta);
 	}
-	GorillaClimbCocosFrameMeterFrames += 1;
-	GorillaClimbCocosFrameMeterElapsed += frameDelta;
-	GorillaClimbCocosFrameMeterLastDelta = frameDelta;
-	GorillaClimbCocosFrameMeterMaxDrawDuration = MAX(GorillaClimbCocosFrameMeterMaxDrawDuration, drawDuration);
+	SquiggleClimbCocosFrameMeterFrames += 1;
+	SquiggleClimbCocosFrameMeterElapsed += frameDelta;
+	SquiggleClimbCocosFrameMeterLastDelta = frameDelta;
+	SquiggleClimbCocosFrameMeterMaxDrawDuration = MAX(SquiggleClimbCocosFrameMeterMaxDrawDuration, drawDuration);
 
-	NSInteger cadenceMisses = GorillaClimbCocosMissedTicksForDelta(frameDelta, targetDelta);
-	GorillaClimbCocosFrameMeterCadenceMisses += cadenceMisses;
-	GorillaClimbCocosFrameMeterTotalCadenceMisses += cadenceMisses;
+	NSInteger cadenceMisses = SquiggleClimbCocosMissedTicksForDelta(frameDelta, targetDelta);
+	SquiggleClimbCocosFrameMeterCadenceMisses += cadenceMisses;
+	SquiggleClimbCocosFrameMeterTotalCadenceMisses += cadenceMisses;
 
-	NSInteger deadlineMisses = GorillaClimbCocosDeadlineMissesForDraw(drawDuration, targetDelta, targetLead);
-	GorillaClimbCocosFrameMeterDeadlineMisses += deadlineMisses;
-	GorillaClimbCocosFrameMeterTotalDeadlineMisses += deadlineMisses;
+	NSInteger deadlineMisses = SquiggleClimbCocosDeadlineMissesForDraw(drawDuration, targetDelta, targetLead);
+	SquiggleClimbCocosFrameMeterDeadlineMisses += deadlineMisses;
+	SquiggleClimbCocosFrameMeterTotalDeadlineMisses += deadlineMisses;
 }
 
-void GorillaClimbCocosFrameMeterCopyAndReset(NSInteger *frames,
+void SquiggleClimbCocosFrameMeterCopyAndReset(NSInteger *frames,
 											 CFTimeInterval *elapsed,
 											 CFTimeInterval *lastDelta,
 											 CFTimeInterval *minDelta,
@@ -131,25 +131,25 @@ void GorillaClimbCocosFrameMeterCopyAndReset(NSInteger *frames,
 											 NSInteger *deadlineMisses,
 											 NSInteger *totalDeadlineMisses)
 {
-	if(frames) *frames = GorillaClimbCocosFrameMeterFrames;
-	if(elapsed) *elapsed = GorillaClimbCocosFrameMeterElapsed;
-	if(lastDelta) *lastDelta = GorillaClimbCocosFrameMeterLastDelta;
-	if(minDelta) *minDelta = GorillaClimbCocosFrameMeterMinDelta;
-	if(maxDelta) *maxDelta = GorillaClimbCocosFrameMeterMaxDelta;
-	if(maxDrawDuration) *maxDrawDuration = GorillaClimbCocosFrameMeterMaxDrawDuration;
-	if(cadenceMisses) *cadenceMisses = GorillaClimbCocosFrameMeterCadenceMisses;
-	if(totalCadenceMisses) *totalCadenceMisses = GorillaClimbCocosFrameMeterTotalCadenceMisses;
-	if(deadlineMisses) *deadlineMisses = GorillaClimbCocosFrameMeterDeadlineMisses;
-	if(totalDeadlineMisses) *totalDeadlineMisses = GorillaClimbCocosFrameMeterTotalDeadlineMisses;
+	if(frames) *frames = SquiggleClimbCocosFrameMeterFrames;
+	if(elapsed) *elapsed = SquiggleClimbCocosFrameMeterElapsed;
+	if(lastDelta) *lastDelta = SquiggleClimbCocosFrameMeterLastDelta;
+	if(minDelta) *minDelta = SquiggleClimbCocosFrameMeterMinDelta;
+	if(maxDelta) *maxDelta = SquiggleClimbCocosFrameMeterMaxDelta;
+	if(maxDrawDuration) *maxDrawDuration = SquiggleClimbCocosFrameMeterMaxDrawDuration;
+	if(cadenceMisses) *cadenceMisses = SquiggleClimbCocosFrameMeterCadenceMisses;
+	if(totalCadenceMisses) *totalCadenceMisses = SquiggleClimbCocosFrameMeterTotalCadenceMisses;
+	if(deadlineMisses) *deadlineMisses = SquiggleClimbCocosFrameMeterDeadlineMisses;
+	if(totalDeadlineMisses) *totalDeadlineMisses = SquiggleClimbCocosFrameMeterTotalDeadlineMisses;
 
-	GorillaClimbCocosFrameMeterFrames = 0;
-	GorillaClimbCocosFrameMeterElapsed = 0.0;
-	GorillaClimbCocosFrameMeterLastDelta = 0.0;
-	GorillaClimbCocosFrameMeterMinDelta = 0.0;
-	GorillaClimbCocosFrameMeterMaxDelta = 0.0;
-	GorillaClimbCocosFrameMeterMaxDrawDuration = 0.0;
-	GorillaClimbCocosFrameMeterCadenceMisses = 0;
-	GorillaClimbCocosFrameMeterDeadlineMisses = 0;
+	SquiggleClimbCocosFrameMeterFrames = 0;
+	SquiggleClimbCocosFrameMeterElapsed = 0.0;
+	SquiggleClimbCocosFrameMeterLastDelta = 0.0;
+	SquiggleClimbCocosFrameMeterMinDelta = 0.0;
+	SquiggleClimbCocosFrameMeterMaxDelta = 0.0;
+	SquiggleClimbCocosFrameMeterMaxDrawDuration = 0.0;
+	SquiggleClimbCocosFrameMeterCadenceMisses = 0;
+	SquiggleClimbCocosFrameMeterDeadlineMisses = 0;
 }
 
 #pragma mark -
@@ -461,13 +461,13 @@ static NSInteger CCMaximumFramesPerSecond(void)
 
 	CFTimeInterval drawDuration = CACurrentMediaTime() - wallStart;
 	CFTimeInterval targetDelta = _animationInterval > 0.0 ? _animationInterval : 1.0 / 60.0;
-	GorillaClimbCocosFrameMeterRecord(displayDelta, wallDelta, drawDuration, targetDelta, targetLead);
+	SquiggleClimbCocosFrameMeterRecord(displayDelta, wallDelta, drawDuration, targetDelta, targetLead);
 	BOOL cadenceSpike = (displayDelta > targetDelta * 1.5) || (wallDelta > targetDelta * 1.5);
 	BOOL drawSpike = drawDuration > targetDelta * 0.90;
 	if((cadenceSpike || drawSpike) && wallStart - lastDiagnosticLogTime > 0.5){
 		lastDiagnosticLogTime = wallStart;
 		NSString *mode = [[NSRunLoop currentRunLoop] currentMode] ?: @"unknown";
-		[[NSNotificationCenter defaultCenter] postNotificationName:GorillaClimbCocosFrameDiagnosticNotification
+		[[NSNotificationCenter defaultCenter] postNotificationName:SquiggleClimbCocosFrameDiagnosticNotification
 															object:nil
 														  userInfo:@{
 			@"kind": @"display_link",
