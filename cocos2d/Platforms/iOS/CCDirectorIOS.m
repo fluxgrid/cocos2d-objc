@@ -271,6 +271,16 @@ void SquiggleClimbCocosFrameMeterCopyAndReset(NSInteger *frames,
 
 #pragma mark Director - UIViewController delegate
 
+- (BOOL)prefersHomeIndicatorAutoHidden
+{
+	return YES;
+}
+
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
+{
+	return UIRectEdgeAll;
+}
+
 
 -(void) setView:(CC_VIEW<CCDirectorView> *)view
 {

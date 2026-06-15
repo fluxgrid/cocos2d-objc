@@ -263,6 +263,10 @@ FindPOTScale(CGFloat size, CGFloat fixedSize)
 -(void)forceOrientation
 {
 #if __CC_PLATFORM_IOS && defined(__IPHONE_8_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_8_0 && !defined(__TV_OS_VERSION_MAX_ALLOWED)
+    if (@available(iOS 13.0, *)) {
+        return;
+    }
+
     if([navController_.screenOrientation isEqual:CCScreenOrientationAll])
     {
         [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationUnknown];
